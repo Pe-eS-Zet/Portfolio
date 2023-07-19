@@ -1,0 +1,211 @@
+--- 1
+CREATE DATABASE Sklep_Odziezowy_Pawel_FHU;
+USE Sklep_Odziezowy_Pawel_FHU;
+
+--- 2
+CREATE TABLE Producenci(
+ID_Producenta INTEGER PRIMARY KEY,
+Nazwa_Producenta VARCHAR(50),
+Adres_Producenta VARCHAR(255) DEFAULT NULL,
+NIP_Producenta VARCHAR(10) DEFAULT NULL,
+Data_Umowy DATE DEFAULT NULL,
+CONSTRAINT CHECK (octet_length(NIP_Producenta) = 10)
+);
+
+--- 3
+CREATE TABLE Produkty(
+ID_Produktu INTEGER PRIMARY KEY AUTO_INCREMENT,
+ID_Producenta INTEGER,
+Nazwa_Produktu VARCHAR(50),
+Opis_Produktu VARCHAR(255) DEFAULT NULL,
+Cena_netto_zakupu DOUBLE DEFAULT NULL,
+Cena_brutto_zakupu DOUBLE AS (Cena_netto_zakupu + (Cena_netto_zakupu * Procent_VAT_Sprzedazy)/100),
+Cena_netto_sprzedazy DOUBLE DEFAULT NULL,
+Cena_brutto_sprzedazy DOUBLE AS (Cena_netto_sprzedazy + (Cena_netto_sprzedazy * Procent_VAT_Sprzedazy)/100),
+Procent_VAT_sprzedazy DOUBLE DEFAULT NULL
+);
+
+--- 4
+CREATE TABLE Zamowienia(
+ID_Zamowienia INTEGER PRIMARY KEY AUTO_INCREMENT,
+ID_Klienta INTEGER DEFAULT NULL,
+ID_Produktu INTEGER,
+Data_Zamowienia DATE DEFAULT NULL
+);
+
+--- 5
+CREATE TABLE Klienci(
+ID_Klienta INTEGER PRIMARY KEY AUTO_INCREMENT,
+ID_Zamowienia INTEGER DEFAULT NULL,
+Imie VARCHAR(30) DEFAULT NULL,
+Nazwisko VARCHAR(40) DEFAULT NULL,
+Adres VARCHAR(255) DEFAULT NULL
+);
+
+--- 6
+ALTER TABLE Produkty 
+ADD CONSTRAINT ID_Producenta_FK
+FOREIGN KEY (ID_Producenta) 
+REFERENCES Producenci(ID_Producenta);
+
+ALTER TABLE Zamowienia
+ADD CONSTRAINT ID_Produktu_FK
+FOREIGN KEY (ID_Produktu)
+REFERENCES Produkty(ID_Produktu);
+
+ALTER TABLE Zamowienia
+ADD CONSTRAINT ID_Klienta_FK
+FOREIGN KEY (ID_Klienta)
+REFERENCES Klienci(ID_Klienta);
+
+ALTER TABLE Klienci
+ADD CONSTRAINT ID_Zamowienia_FK
+FOREIGN KEY (ID_Zamowienia)
+REFERENCES Zamowienia(ID_Zamowienia);
+
+--- 7
+INSERT INTO Producenci (ID_Producenta, Nazwa_Producenta, Adres_Producenta, NIP_Producenta, Data_Umowy) VALUES
+(1, 'Reserved', 'Germany', '7791011327', '2018-10-01'),
+(2, 'Orsay', 'Polska', '7790001327', '2022-09-17'),
+(3, 'Mohito', 'UK', '1111011327', '2017-01-01'),
+(4, 'H&M', 'Italy', '7791011222', '2010-05-01');
+
+INSERT INTO Produkty (ID_Producenta, Nazwa_Produktu, Opis_Produktu, Cena_netto_zakupu, Cena_netto_sprzedazy, Procent_VAT_sprzedazy) VALUES
+(1, 'spodnica', 'wiosenna', 50, 100, 23),
+(2, 'spodnica', 'mini', 30, 200, 23),
+(3, 'spodnica', 'krotka', 30, 120, 23),
+(4, 'sukienka', 'maxi', 15, 89, 23),
+(2, 'sukienka', 'weselna', 40, 159, 23),
+(2, 'sukienka', 'letnia', 8, 109, 23),
+(1, 'bluza', 'z kaptur', 12, 59, 23),
+(4, 'bluza', 'rozpinana', 22, 159, 23),
+(3, 'bluza', 'bez kaptur', 28, 119, 23),
+(3, 'bluzka', 'golf', 30, 159, 23),
+(3, 'bluzka', 'krotki rekaw', 5, 59, 23),
+(4, 'spodnie', 'rurki', 8, 79, 23),
+(1, 'spodnie', 'jeansy', 5, 10, 23),
+(4, 'spodnie', 'biurowe', 15, 159, 23),
+(3, 'bluzka', 'koszulowa', 45, 259, 23),
+(4, 'bluzka', 'satynowa', 5, 59, 23),
+(4, 'dres', 'komplet', 6, 69, 23),
+(2, 'dres', 'bluza', 16, 169, 23),
+(3, 'dres', 'spodnie', 12, 169, 23),
+(4, 'plecak', 'sportowy', 4, 69, 23);
+
+INSERT INTO Klienci (Imie, Nazwisko, Adres) VALUES
+('Maria', 'Laskowski', 'Warszawa'),
+('Jolanta', 'Kowalska', 'Gdansk'),
+('Karolina', 'Starzycka', 'Gdynia'),
+('Agnieszka', 'Kovacs', 'Budapest'),
+('Marta', 'Szlachta', 'Szczecin'),
+('Ewelina', 'Udala', 'Katowice'),
+('Jan', 'Filipowski', 'Sanok'),
+('Adam', 'Grzesiak', 'Nowy Sacz'),
+('Antoni', 'Zielinski', 'Lublin'),
+('Patryk', 'Gorecki', 'Wroclaw');
+
+INSERT INTO Zamowienia (ID_Klienta, ID_Produktu, Data_Zamowienia) VALUES
+(4, 2, '2022-01-15'),
+(5, 15, '2022-02-18'),
+(7, 8, '2022-03-03'),
+(8, 19, '2022-09-22'),
+(1, 20, '2022-05-31'),
+(2, 7, '2022-06-02'),
+(2, 1, '2022-07-17'),
+(3, 3, '2022-08-21'),
+(10, 3, '2022-09-22'),
+(5, 8, '2022-10-23');
+
+--- 8
+SELECT P.Nazwa_Produktu, M.ID_Producenta, M.Nazwa_Producenta, M.Adres_Producenta, M.NIP_Producenta, M.Data_Umowy
+FROM Produkty AS P
+JOIN Producenci AS M
+ON P.ID_Producenta = M.ID_Producenta
+WHERE M.ID_Producenta = 1;
+
+--- 9
+SELECT P.Nazwa_Produktu, M.ID_Producenta, M.Nazwa_Producenta, M.Adres_Producenta, M.NIP_Producenta, M.Data_Umowy
+FROM Produkty P, Producenci M
+WHERE P.ID_Producenta = 1 AND M.ID_Producenta = 1
+ORDER BY P.Nazwa_Produktu;
+
+--- 10
+SELECT ROUND(AVG(Cena_brutto_zakupu),2) AS 'Srednia cena produktow'
+FROM Produkty
+WHERE ID_Producenta = 1;
+
+--- 11
+SELECT P.Nazwa_Produktu, P.Cena_brutto_sprzedazy, 
+       (CASE 
+            WHEN P.Cena_brutto_sprzedazy <= median_price THEN 'Tanie'
+            WHEN P.Cena_brutto_sprzedazy > median_price THEN 'Drogie'
+        END) AS 'Kategoria'
+FROM Produkty P 
+CROSS JOIN (
+  SELECT AVG(middle_values) AS median_price 
+  FROM (
+    SELECT Cena_brutto_sprzedazy AS middle_values 
+    FROM (
+      SELECT @row:=@row+1 as `row`, Cena_brutto_sprzedazy
+      FROM Produkty 
+      CROSS JOIN (SELECT @row:=0) AS r
+      WHERE ID_Producenta = 1 
+      ORDER BY Cena_brutto_sprzedazy
+    ) AS t1
+    CROSS JOIN (
+      SELECT COUNT(*) as count
+      FROM Produkty 
+      WHERE ID_Producenta = 1 
+    ) AS t2
+    WHERE t1.row >= t2.count/2 and t1.row <= ((t2.count/2) +1)
+  ) AS t3
+) AS median_query
+WHERE P.ID_Producenta = 1
+ORDER BY P.Cena_brutto_sprzedazy;
+
+--- 12
+SELECT P.Nazwa_Produktu
+FROM Zamowienia Z
+JOIN Produkty P 
+ON Z.ID_Produktu = P.ID_Produktu;
+
+--- 13
+SELECT P.Nazwa_Produktu, P.Opis_Produktu, P.Cena_netto_zakupu, P.Cena_netto_sprzedazy
+FROM Produkty P 
+JOIN Zamowienia Z
+ON P.ID_Produktu = Z.ID_Produktu
+LIMIT 5;
+
+--- 14
+SELECT ROUND(SUM(Produkty.Cena_brutto_sprzedazy),2) AS Suma_wszystkich_zamowien
+FROM Zamowienia
+JOIN Produkty
+ON Produkty.ID_Produktu = Zamowienia.ID_Produktu;
+
+--- 15
+SELECT Zamowienia.ID_Produktu, Produkty.Nazwa_Produktu, Zamowienia.Data_Zamowienia
+FROM Zamowienia
+JOIN Produkty
+ON Produkty.ID_Produktu = Zamowienia.ID_Produktu
+ORDER BY Zamowienia.Data_Zamowienia;
+
+--- 16
+SELECT *
+FROM Produkty 
+WHERE CONCAT(ID_Producenta, Nazwa_Produktu, Opis_Produktu, Cena_netto_zakupu, Cena_netto_sprzedazy, Procent_VAT_Sprzedazy) IS NULL;
+
+--- 17
+SELECT Z.ID_Produktu, P.Nazwa_Produktu, P.Opis_Produktu, COUNT(P.Nazwa_Produktu) AS 'Liczba Zamowien', P.Cena_brutto_sprzedazy
+FROM Zamowienia Z
+JOIN Produkty P
+ON P.ID_Produktu = Z.ID_Produktu
+GROUP BY Z.ID_Produktu
+ORDER BY COUNT(P.Nazwa_Produktu) DESC
+LIMIT 1;
+
+--- 18
+SELECT Z.Data_Zamowienia, COUNT(Z.Data_Zamowienia) AS Ilosc_Zlozonych_Zamowien
+FROM Zamowienia Z
+GROUP BY Z.Data_Zamowienia
+ORDER BY COUNT(Z.Data_Zamowienia) DESC
+LIMIT 1;
